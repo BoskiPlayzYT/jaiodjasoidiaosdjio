@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Presidential Quiz</title>
+<style>
+    body { font-family: Arial, sans-serif; background:#f4f4f4; padding:20px; }
+    #quiz-box { background:white; padding:20px; max-width:700px; margin:auto; border-radius:10px; }
+    .answer-btn {
+        display:block; width:100%; margin:8px 0; padding:10px;
+        border-radius:6px; border:none; cursor:pointer; font-size:16px;
+        background:#e0e0e0;
+    }
+    .correct { background:#4CAF50 !important; color:white; }
+    .incorrect { background:#E53935 !important; color:white; }
+    #explanation { margin-top:15px; font-weight:bold; }
+    #next-btn {
+        margin-top:20px; padding:10px 20px; font-size:16px;
+        border:none; border-radius:6px; cursor:pointer; background:#1976D2; color:white;
+        display:none;
+    }
+</style>
+</head>
+<body>
+
+<div id="quiz-box">
+    <h2 id="question"></h2>
+    <div id="answers"></div>
+    <div id="explanation"></div>
+    <button id="next-btn" onclick="nextQuestion()">Next Question</button>
+</div>
+
+<script>
+// ----------------------
+// QUIZ QUESTION BANK
+// ----------------------
+const questions = [
+    // William Henry Harrison
+    {
+        q: "Which president fought in the Battle of Tippecanoe?",
+        answers: ["William Henry Harrison", "James Polk", "Zachary Taylor", "John Tyler"],
+        correct: 0,
+        explanation: "Harrison led U.S. forces at the Battle of Tippecanoe."
+    },
+    {
+        q: "Who used the campaign slogan 'Tippecanoe and Tyler Too'?",
+        answers: ["Harrison & Tyler", "Polk & Dallas", "Taylor & Fillmore", "Pierce & King"],
+        correct: 0,
+        explanation: "It promoted William Henry Harrison and John Tyler."
+    },
+    {
+        q: "Which president died only one month into office?",
+        answers: ["William Henry Harrison", "Zachary Taylor", "James Polk", "Franklin Pierce"],
+        correct: 0,
+        explanation: "Harrison died 31 days after inauguration."
+    },
+    {
+        q: "Which president inspired the log cabin whiskey campaign?",
+        answers: ["William Henry Harrison", "James Polk", "John Tyler", "Millard Fillmore"],
+        correct: 0,
+        explanation: "His campaign used log cabin–shaped whiskey bottles."
+    },
+    {
+        q: "Which president is associated with the origin of the word 'booze'?",
+        answers: ["William Henry Harrison", "James Buchanan", "Franklin Pierce", "Andrew Johnson"],
+        correct: 0,
+        explanation: "The Harrison campaign popularized the term."
+    },
+
+    // John Tyler
+    {
+        q: "Which president annexed Texas?",
+        answers: ["John Tyler", "James Polk", "Zachary Taylor", "Millard Fillmore"],
+        correct: 0,
+        explanation: "Tyler annexed Texas, though it became a state under Polk."
+    },
+    {
+        q: "Which president voted against the Force Bill?",
+        answers: ["John Tyler", "Andrew Johnson", "James Buchanan", "Franklin Pierce"],
+        correct: 0,
+        explanation: "Tyler opposed federal coercion of states."
+    },
+    {
+        q: "Which president nearly died in a naval cannon explosion?",
+        answers: ["John Tyler", "James Polk", "Zachary Taylor", "Abraham Lincoln"],
+        correct: 0,
+        explanation: "A cannon exploded aboard the USS Princeton during Tyler’s presidency."
+    },
+    {
+        q: "Who is the only president to officially side with the Confederacy?",
+        answers: ["John Tyler", "James Buchanan", "Andrew Johnson", "Franklin Pierce"],
+        correct: 0,
+        explanation: "Tyler served in the Confederate Congress."
+    },
+    {
+        q: "Which president said banks were 'the original sin against the Constitution'?",
+        answers: ["John Tyler", "Andrew Jackson", "James Polk", "Millard Fillmore"],
+        correct: 0,
+        explanation: "Tyler strongly opposed national banks."
+    },
+
+    // James K. Polk
+    {
+        q: "Which president achieved all four of his major goals in one term?",
+        answers: ["James Polk", "Franklin Pierce", "Zachary Taylor", "Millard Fillmore"],
+        correct: 0,
+        explanation: "Polk is often called the 'Most Successful President.'"
+    },
+    {
+        q: "Which president oversaw the Mexican-American War?",
+        answers: ["James Polk", "Zachary Taylor", "Franklin Pierce", "James Buchanan"],
+        correct: 0,
+        explanation: "The war occurred during Polk’s presidency."
+    },
+    {
+        q: "Which president acquired the Oregon Territory?",
+        answers: ["James Polk", "John Tyler", "Millard Fillmore", "Abraham Lincoln"],
+        correct: 0,
+        explanation: "Polk negotiated the Oregon boundary with Britain."
+    },
+    {
+        q: "Which president disliked General Zachary Taylor for political reasons?",
+        answers: ["James Polk", "Andrew Johnson", "Franklin Pierce", "James Buchanan"],
+        correct: 0,
+        explanation: "Polk feared Taylor’s popularity would make him president."
+    },
+    {
+        q: "Which president had the shortest retirement?",
+        answers: ["James Polk", "Zachary Taylor", "Franklin Pierce", "Andrew Johnson"],
+        correct: 0,
+        explanation: "Polk died one month after leaving office."
+    },
+
+    // Zachary Taylor
+    {
+        q: "Which president fought in the War of 1812, Black Hawk War, Seminole War, and Mexican-American War?",
+        answers: ["Zachary Taylor", "James Polk", "Franklin Pierce", "Andrew Johnson"],
+        correct: 0,
+        explanation: "Taylor was a career military officer."
+    },
+    {
+        q: "Which president was known for never panicking?",
+        answers: ["Zachary Taylor", "James Polk", "Millard Fillmore", "Franklin Pierce"],
+        correct: 0,
+        explanation: "Taylor’s calmness was legendary."
+    },
+    {
+        q: "Which president died during his presidency in 1850?",
+        answers: ["Zachary Taylor", "William Henry Harrison", "James Polk", "Franklin Pierce"],
+        correct: 0,
+        explanation: "Taylor died suddenly after 16 months in office."
+    },
+    {
+        q: "Which president’s daughter married Jefferson Davis?",
+        answers: ["Zachary Taylor", "James Buchanan", "John Tyler", "Franklin Pierce"],
+        correct: 0,
+        explanation: "Sarah Knox Taylor married the future Confederate president."
+    },
+
+    // Millard Fillmore
+    {
+        q: "Who was the last Whig president?",
+        answers: ["Millard Fillmore", "Zachary Taylor", "Franklin Pierce", "James Buchanan"],
+        correct: 0,
+        explanation: "Fillmore was the final Whig to serve as president."
+    },
+    {
+        q: "Which president signed the Compromise of 1850 into law?",
+        answers: ["Millard Fillmore", "Zachary Taylor", "Franklin Pierce", "James Buchanan"],
+        correct: 0,
+        explanation: "Fillmore supported Clay’s compromise package."
+    },
+    {
+        q: "Which president created the first permanent White House library?",
+        answers: ["Millard Fillmore", "James Polk", "Franklin Pierce", "Abraham Lincoln"],
+        correct: 0,
+        explanation: "Fillmore established the library."
+    },
+    {
+        q: "Which president married his teacher?",
+        answers: ["Millard Fillmore", "James Buchanan", "Franklin Pierce", "Andrew Johnson"],
+        correct: 0,
+        explanation: "Fillmore married Abigail Powers, his former teacher."
+    },
+
+    // Franklin Pierce
+    {
+        q: "Which president dealt with Bleeding Kansas?",
+        answers: ["Franklin Pierce", "James Buchanan", "Abraham Lincoln", "Andrew Johnson"],
+        correct: 0,
+        explanation: "Pierce signed the Kansas-Nebraska Act."
+    },
+    {
+        q: "Which president completed the Gadsden Purchase?",
+        answers: ["Franklin Pierce", "James Polk", "Millard Fillmore", "James Buchanan"],
+        correct: 0,
+        explanation: "Pierce purchased land from Mexico for a southern railroad."
+    },
+    {
+        q: "Which president delivered his entire inaugural address from memory?",
+        answers: ["Franklin Pierce", "Abraham Lincoln", "James Polk", "John Tyler"],
+        correct: 0,
+        explanation: "Pierce memorized his full address."
+    },
+    {
+        q: "Which president brought the first Christmas tree into the White House?",
+        answers: ["Franklin Pierce", "Abraham Lincoln", "James Buchanan", "Andrew Johnson"],
+        correct: 0,
+        explanation: "Pierce is credited with the first White House Christmas tree."
+    },
+
+    // James Buchanan
+    {
+        q: "Which president never married?",
+        answers: ["James Buchanan", "Andrew Johnson", "John Tyler", "Franklin Pierce"],
+        correct: 0,
+        explanation: "Buchanan remained a lifelong bachelor."
+    },
+    {
+        q: "Which president presided during the Dred Scott decision?",
+        answers: ["James Buchanan", "Abraham Lincoln", "Franklin Pierce", "Andrew Johnson"],
+        correct: 0,
+        explanation: "The Supreme Court issued the ruling early in Buchanan’s term."
+    },
+    {
+        q: "Which president oversaw the Panic of 1857?",
+        answers: ["James Buchanan", "Franklin Pierce", "Abraham Lincoln", "Andrew Johnson"],
+        correct: 0,
+        explanation: "A major financial crisis struck during Buchanan’s presidency."
+    },
+    {
+        q: "Which president saw seven states secede before leaving office?",
+        answers: ["James Buchanan", "Abraham Lincoln", "Franklin Pierce", "Andrew Johnson"],
+        correct: 0,
+        explanation: "South Carolina and six others seceded under Buchanan."
+    },
+    {
+        q: "Which president was involved in the Pig and Potato War?",
+        answers: ["James Buchanan", "Franklin Pierce", "James Polk", "Andrew Johnson"],
+        correct: 0,
+        explanation: "A border dispute with Britain escalated during Buchanan’s term."
+    },
+
+    // Abraham Lincoln
+    {
+        q: "Which president issued the Emancipation Proclamation?",
+        answers: ["Abraham Lincoln", "James Polk", "Andrew Johnson", "Millard Fillmore"],
+        correct: 0,
+        explanation: "Lincoln issued it in 1863."
+    },
+    {
+        q: "Which president was the tallest?",
+        answers: ["Abraham Lincoln", "George Washington", "James Buchanan", "Andrew Johnson"],
+        correct: 0,
+        explanation: "Lincoln stood 6'4\"."
+    },
+    {
+        q: "Which president was the first to wear a beard?",
+        answers: ["Abraham Lincoln", "James Buchanan", "Franklin Pierce", "Andrew Johnson"],
+        correct: 0,
+        explanation: "Lincoln grew a beard after a young girl suggested it."
+    },
+    {
+        q: "Which president delivered the Gettysburg Address?",
+        answers: ["Abraham Lincoln", "James Polk", "John Tyler", "Andrew Johnson"],
+        correct: 0,
+        explanation: "Lincoln delivered it in 1863."
+    },
+    {
+        q: "Which president was the first to be assassinated?",
+        answers: ["Abraham Lincoln", "James Garfield", "William McKinley", "John F. Kennedy"],
+        correct: 0,
+        explanation: "Lincoln was assassinated in 1865."
+    },
+    {
+        q: "Which president wrestled a gang leader and won?",
+        answers: ["Abraham Lincoln", "Andrew Johnson", "James Polk", "Zachary Taylor"],
+        correct: 0,
+        explanation: "Lincoln was known for his physical strength."
+    },
+    {
+        q: "Which president was the first Republican elected?",
+        answers: ["Abraham Lincoln", "Ulysses S. Grant", "James Garfield", "Rutherford Hayes"],
+        correct: 0,
+        explanation: "Lincoln was the first Republican president."
+    },
+
+    // Andrew Johnson
+    {
+        q: "Which president was impeached but acquitted by one vote?",
+        answers: ["Andrew Johnson", "Richard Nixon", "Bill Clinton", "James Buchanan"],
+        correct: 0,
+        explanation: "Johnson survived removal by a single vote."
+    },
+    {
+        q: "Which president oversaw the Alaska Purchase?",
+        answers: ["Andrew Johnson", "Abraham Lincoln", "James Buchanan", "Ulysses S. Grant"],
+        correct: 0,
+        explanation: "Seward negotiated the purchase under Johnson."
+    },
+    {
+        q: "Which president went on the disastrous 'Swing Around the Circle' tour?",
+        answers: ["Andrew Johnson", "Franklin Pierce", "James Buchanan", "John Tyler"],
+        correct: 0,
+        explanation: "Johnson’s speeches damaged his reputation."
+    },
+    {
+        q: "Which president served as a U.S. senator after his presidency?",
+        answers: ["Andrew Johnson", "John Quincy Adams", "James Buchanan", "Millard Fillmore"],
+        correct: 0,
+        explanation: "Johnson is the only president to do so."
+    },
+    {
+        q: "Which president vetoed the Civil Rights Act of 1866?",
+        answers: ["Andrew Johnson", "James Buchanan", "Franklin Pierce", "John Tyler"],
+        correct: 0,
+        explanation: "Congress overrode Johnson’s veto."
+    }
+];
+
+// Shuffle questions
+questions.sort(() => Math.random() - 0.5);
+
+let current = 0;
+
+// ----------------------
+// DISPLAY QUESTION
+// ----------------------
+function loadQuestion() {
+    const q = questions[current];
+    document.getElementById("question").textContent = q.q;
+
+    const answersDiv = document.getElementById("answers");
+    answersDiv.innerHTML = "";
+
+    q.answers.forEach((ans, index) => {
+        const btn = document.createElement("button");
+        btn.textContent = ans;
+        btn.className = "answer-btn";
+        btn.onclick = () => checkAnswer(index);
+        answersDiv.appendChild(btn);
+    });
+
+    document.getElementById("explanation").textContent = "";
+    document.getElementById("next-btn").style.display = "none";
+}
+
+// ----------------------
+// CHECK ANSWER
+// ----------------------
+function checkAnswer(selected) {
+    const q = questions[current];
+    const buttons = document.querySelectorAll(".answer-btn");
+
+    buttons.forEach((btn, index) => {
+        btn.disabled = true;
+        if (index === q.correct) btn.classList.add("correct");
+        else if (index === selected) btn.classList.add("incorrect");
+    });
+
+    document.getElementById("explanation").textContent = q.explanation;
+    document.getElementById("next-btn").style.display = "block";
+}
+
+// ----------------------
+// NEXT QUESTION
+// ----------------------
+function nextQuestion() {
+    current++;
+    if (current >= questions.length) {
+        document.getElementById("quiz-box").innerHTML = "<h2>Quiz Complete!</h2><p>Great job learning your presidents.</p>";
+    } else {
+        loadQuestion();
+    }
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
